@@ -1,0 +1,190 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:ui="http://java.sun.com/jsf/facelets"
+  xmlns:f="http://java.sun.com/jsf/core"
+  xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:nxu="http://nuxeo.org/nxweb/util"
+  xmlns:a4j="http://richfaces.org/a4j">
+
+   <script type="text/javascript" src="seam/resource/remoting/resource/remote.js"></script>
+   <script type="text/javascript" src="seam/resource/remoting/interface.js?compareVersionsActions"></script>
+
+   <script type="text/javascript">
+            
+   function setPageNr(sessionId, pageNr){
+      var ParamStr = sessionId+';'+pageNr;
+      Seam.Component.getInstance("compareVersionsActions").setPageNr(ParamStr);
+   }
+   
+   function checkAlmostTwoCheckBox() {
+       var listOfInputs = document.getElementsByTagName("input");
+       var i;
+       var cnt =0;
+       for (i=0; i&lt;listOfInputs.length; i++) {
+         if (listOfInputs[i].type=="checkbox"){
+           if (listOfInputs[i].checked==true) cnt++;
+         }
+       }
+       if (cnt&lt;2) {
+       //   Alert(message);
+          return false;
+       } else{  
+       	  return true;
+       }	  
+   }  
+    
+   function SetversionSession(value, ActcaptionBtn, sessionId, message)
+   {
+        if (value == ActcaptionBtn){
+           Seam.Component.getInstance("compareVersionsActions").clear(sessionId);
+        } else {
+          if (!checkAlmostTwoCheckBox()){  
+            alert(message);
+          }
+        }
+   }
+   
+   function SetversionSessionId(Ref, version, sessionId, idname, message, checked)
+   {
+     if (checkCheckBox(idname, message, checked)){
+        var ParamStr = Ref+';'+ version + ';'+ sessionId+';1';
+        if (checked) {
+           ParamStr = ParamStr+';1';
+        } else {
+           ParamStr = ParamStr+';0';
+        }
+        Seam.Component.getInstance("compareVersionsActions").setVersionItem(ParamStr);
+     }   
+   }  
+   
+   function checkCheckBox(idname, message, checked) {
+       var listOfInputs = document.getElementsByTagName("input");
+       var i;
+       var cnt =0;
+       for (i=0; i&lt;listOfInputs.length; i++) {
+         if (listOfInputs[i].type=="checkbox"){
+           if (listOfInputs[i].checked==true) cnt++;
+           if (cnt > 2) {
+              var CheckBox = document.getElementById(idname);
+              CheckBox.checked=false;
+              alert(message);
+              return false;
+           }   
+         }
+       }
+       return true;
+    }    
+    
+    </script>
+
+   <a4j:outputPanel id="compare_selection_buttons" ajaxRendered="false">
+
+   <h:panelGroup rendered="#{nxd:hasPermission(currentDocument, 'ReadVersion') and
+          currentDocument.versionable and
+       !(currentDocument.version or currentDocument.proxy)}">
+
+    <h:form rendered="${not empty versionList }">
+    <h:panelGroup rendered="#{!compareVersionsActions.isCompareState(currentDocument.getSessionId())}">
+    
+    <h:dataTable id="dtable" var="versionItem" value="#{versionList}"
+      class="dataOutput" rowClasses="dataRowEven,dataRowOdd">
+      <h:column>
+        <f:facet name="header">
+          <h:outputText value="#{messages['label.version']}" />
+        </f:facet>
+        <h:outputText value="#{versionItem.description}" />
+      </h:column>
+
+      <h:column>
+        <f:facet name="header">
+          <h:outputText value="#{messages['label.action']}" />
+        </f:facet>
+        
+        <ui:insert name="document_versions_buttons" />       
+      </h:column>
+    </h:dataTable>
+    </h:panelGroup>
+        
+     <h:outputText value="   "/>    
+     <h:outputText value="   "/>
+              
+      <a4j:commandButton id="commandbutton1"
+         value="#{compareVersionsActions.returnCaption(currentDocument.getSessionId(), messages['command.button.indietro'],messages['command.button.confronta'])}"
+         onclick="SetversionSession(this.value, '#{messages['command.button.indietro']}', '#{currentDocument.getSessionId()}', '#{messages['error.message.atLeasttwocheckbox']}')"
+         styleClass="button" reRender="compare_selection_buttons"
+         rendered="#{compareVersionsActions.checkBoxValid(currentDocument)}" >  
+     </a4j:commandButton>       
+         
+
+      <h:panelGroup id="comboBox"  rendered="#{compareVersionsActions.isCompareState(currentDocument.getSessionId())}">
+
+      <h:outputText value="  #{messages['command.combo.label.pages']} " />   
+       <h:outputText value="  " />
+
+       <h:commandLink
+       value="  "
+       action="#{compareVersionsActions.setFirstPageNr(currentDocument.getSessionId())}"
+       reRender="compare_selection_buttons"
+       rendered="#{compareVersionsActions.checkBoxValid(currentDocument)}" >
+       <h:outputText value="  " />
+       <nxu:graphicImage value="/icons/move_all_left.png" rendered="#{!compareVersionsActions.isFirstPage(currentDocument.getSessionId())}"/>
+       <nxu:graphicImage value="/icons/move_all_left_d.png" rendered="#{compareVersionsActions.isFirstPage(currentDocument.getSessionId())}"/>
+       <h:outputText value="  " />
+       </h:commandLink>
+       
+       <h:commandLink
+       value="  "
+       action="#{compareVersionsActions.setPrevPageNr(currentDocument.getSessionId())}"
+       reRender="compare_selection_buttons"
+       rendered="#{compareVersionsActions.checkBoxValid(currentDocument)}" >
+       <h:outputText value="  " />
+       <nxu:graphicImage value="/icons/move_left.png" rendered="#{!compareVersionsActions.isFirstPage(currentDocument.getSessionId())}"/>
+       <nxu:graphicImage value="/icons/move_left_d.png" rendered="#{compareVersionsActions.isFirstPage(currentDocument.getSessionId())}"/>
+       <h:outputText value="  " />
+       </h:commandLink>
+       
+       <h:outputText value="  " />
+
+       <h:selectOneMenu  value="#{compareVersionsActions.page}">
+        <a4j:support event="onchange" 
+         onsubmit="setPageNr('#{currentDocument.getSessionId()}', this.value)"
+         reRender="compare_selection_buttons" />
+   	<f:selectItems value="#{compareVersionsActions.listPages}" />
+       </h:selectOneMenu>
+
+       <h:commandLink
+       value="  "
+       action="#{compareVersionsActions.setNextPageNr(currentDocument.getSessionId())}"
+       reRender="compare_selection_buttons"
+       rendered="#{compareVersionsActions.checkBoxValid(currentDocument)}" >
+       <h:outputText value="  " />
+       <nxu:graphicImage value="/icons/move_right.png" rendered="#{!compareVersionsActions.isLastPage(currentDocument.getSessionId())}"/>
+       <nxu:graphicImage value="/icons/move_right_d.png" rendered="#{compareVersionsActions.isLastPage(currentDocument.getSessionId())}"/>
+       <h:outputText value="  " />
+       </h:commandLink>
+
+       <h:commandLink
+       value="  "
+       action="#{compareVersionsActions.setLastPageNr(currentDocument.getSessionId())}"
+       reRender="compare_selection_buttons"
+       rendered="#{compareVersionsActions.checkBoxValid(currentDocument)}" >
+       <h:outputText value="  " />
+       <nxu:graphicImage value="/icons/move_all_right.png" rendered="#{!compareVersionsActions.isLastPage(currentDocument.getSessionId())}"/>
+       <nxu:graphicImage value="/icons/move_all_right_d.png" rendered="#{compareVersionsActions.isLastPage(currentDocument.getSessionId())}"/>
+       <h:outputText value="  " />
+       </h:commandLink>
+       
+       
+      </h:panelGroup>
+       
+      
+   </h:form>
+
+    <p><h:outputText rendered="${empty versionList}"
+      value="#{messages['label.noversion']}"/></p>
+   </h:panelGroup>
+      
+   <ui:include src="/incl/document_result_compare.xhtml" />
+                  
+   </a4j:outputPanel>
+   
+</div>

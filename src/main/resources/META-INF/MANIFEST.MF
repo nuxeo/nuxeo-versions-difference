@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Qualips & Antonio Urso
+Built-By: Como
+Build-Jdk: 1.6.0_24
+Bundle-ManifestVersion: 1
+Bundle-Version: 0.0.1
+Bundle-Name: Nuxeo ECM Compare different versions
+Bundle-SymbolicName: org.nuxeo.version-difference;singleton:=true
+Bundle-Category: web,stateless
+Nuxeo-Require: org.nuxeo.ecm.core,
+ org.nuxeo.ecm.core.schema,
+ org.nuxeo.ecm.webapp.core

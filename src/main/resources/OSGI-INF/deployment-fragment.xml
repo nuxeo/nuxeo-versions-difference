@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<fragment>
+
+  <extension target="application#MODULE">
+    <module>
+      <ejb>${bundle.fileName}</ejb>
+    </module>
+  </extension>  
+  
+  <install>
+
+    <!--  unzip the war template -->
+    <unzip from="${bundle.fileName}" to="/" prefix="web">
+      <include>web/nuxeo.war/**</include>
+    </unzip>
+    
+    <!--make sure the directory is there-->
+    <mkdir path="lesson-l10n.tmp"/>
+     
+    <!-- Unzip the l10n directory to a temporary place-->
+    <unzip from="${bundle.fileName}" to="lesson-l10n.tmp">
+      <include>l10n/**</include>
+    </unzip>
+     
+    <!-- copy english specific text -->  
+    <append 
+      from="lesson-l10n.tmp/l10n/messages_en.properties"
+      to="nuxeo.war/WEB-INF/classes/messages_en.properties"
+      addNewLine="true"/>
+    <!-- copy french specific text -->
+    <append 
+      from="lesson-l10n.tmp/l10n/messages_fr.properties"
+      to="nuxeo.war/WEB-INF/classes/messages_fr.properties"
+      addNewLine="true"/>
+    <!-- copy italian specific text -->  
+    <append 
+      from="lesson-l10n.tmp/l10n/messages_it.properties"
+      to="nuxeo.war/WEB-INF/classes/messages_it.properties"
+      addNewLine="true"/>
+    
+    <!-- copy default text -->  
+    <append 
+      from="lesson-l10n.tmp/l10n/messages.properties"
+      to="nuxeo.war/WEB-INF/classes/messages.properties"
+      addNewLine="true"/>
+    
+    <!--make sure the directory is there-->
+    <rmdir path="lesson-l10n.tmp"/>
+    
+  </install>
+</fragment>
+
